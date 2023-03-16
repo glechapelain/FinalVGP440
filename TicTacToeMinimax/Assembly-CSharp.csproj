@@ -54,6 +54,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Gameplay.cs" />
+    <Compile Include="Assets\Scripts\GridSpace.cs" />
+    <Compile Include="Assets\Scripts\GameController.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Assets\UltimateGameComponentPack\Information-please-read.txt" />
