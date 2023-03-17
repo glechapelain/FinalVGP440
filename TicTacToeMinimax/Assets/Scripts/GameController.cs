@@ -24,8 +24,10 @@ public class GameController : MonoBehaviour
     string playerSide;
     string computerSide;
     public bool playerMove;
+    int eval;
     int value;
-    [SerializeField] float delay;
+    int score;
+    int position;
 
     [SerializeField] GameObject gameOverPanel;
     [SerializeField] Text gameOverText;
@@ -38,6 +40,7 @@ public class GameController : MonoBehaviour
     [SerializeField] PlayerColor inactivePlayerColor;
 
     int moveCount;
+    int moveCountMinimax;
 
     void Awake()
     {
@@ -46,25 +49,20 @@ public class GameController : MonoBehaviour
         moveCount = 0;
         restartButton.SetActive(false);
         playerMove = true;
-        delay = 50;
     }
 
     void Update()
     {
         if (playerMove == false)
         {
-            delay += delay * Time.deltaTime;
+            moveCountMinimax = moveCount;
+            value = Minimax(buttonList, buttonList.Length - moveCount, true);
 
-            if (delay >= 100)
+            if (buttonList[value].GetComponentInParent<Button>().interactable == true)
             {
-                value = Random.Range(0, 8);
-
-                if (buttonList[value].GetComponentInParent<Button>().interactable == true)
-                {
-                    buttonList[value].text = GetComputerSide();
-                    buttonList[value].GetComponentInParent<Button>().interactable = false;
-                    EndTurn();
-                }
+                buttonList[value].text = GetComputerSide();
+                buttonList[value].GetComponentInParent<Button>().interactable = false;
+                EndTurn();
             }
         }
     }
@@ -114,7 +112,7 @@ public class GameController : MonoBehaviour
     {
         moveCount++;
 
-        if(buttonList[0].text == playerSide && buttonList[1].text == playerSide && buttonList[2].text == playerSide ||
+        if (buttonList[0].text == playerSide && buttonList[1].text == playerSide && buttonList[2].text == playerSide ||
             buttonList[3].text == playerSide && buttonList[4].text == playerSide && buttonList[5].text == playerSide ||
             buttonList[6].text == playerSide && buttonList[7].text == playerSide && buttonList[8].text == playerSide    )
         {
@@ -185,7 +183,6 @@ public class GameController : MonoBehaviour
 
     void ChangeSides()
     {
-        delay = 50;
         playerMove = (playerMove == true) ? false : true;
 
         if(playerMove == true)
@@ -212,7 +209,6 @@ public class GameController : MonoBehaviour
         SetPlayerButtons(true);
         SetPlayerColorsInactive();
         playerMove = true;
-        delay = 10;
 
         for (int i = 0; i < buttonList.Length; ++i)
         {
@@ -240,5 +236,129 @@ public class GameController : MonoBehaviour
         playerX.text.color = inactivePlayerColor.textColor;
         playerO.panel.color = inactivePlayerColor.panelColor;
         playerO.text.color = inactivePlayerColor.textColor;
+    }
+
+    int Minimax(Text[] list, int depth, bool maximizingPlayer)
+    {
+        Text[] tempBoard = new Text[9];
+
+        for (int i = 0; i < tempBoard.Length; ++i)
+        {
+            tempBoard[i].GetComponentInParent<GridSpace>().SetGameControllerReference(this);
+        }
+
+        for (int i = 0; i < buttonList.Length; ++i)
+        {
+            tempBoard[i].text = list[i].text;
+        }
+
+        if (depth == 0)
+        {
+            return Random.Range(0, 8);
+        }
+        else if(maximizingPlayer)
+        {
+            for (int i = 0; i < tempBoard.Length; ++i)
+            {
+                if(tempBoard[i].text == "X" || tempBoard[i].text == "O")
+                {
+                    continue;
+                }
+                else
+                {
+                    tempBoard[i].text = computerSide;
+                    score = TurnMinimax();
+
+                    if (score == 2)
+                    {
+                        return i;
+                    }
+                    else if (score == 1)
+                    {
+                        position = i;
+                    }
+
+                    eval = Minimax(tempBoard, depth - 1, false);
+                    tempBoard[i].text = "";
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < tempBoard.Length; ++i)
+            {
+                if (tempBoard[i].text == "X" || tempBoard[i].text == "O")
+                {
+                    continue;
+                }
+                else
+                {
+                    tempBoard[i].text = computerSide;
+                    score = TurnMinimax();
+
+                    if (score == 2)
+                    {
+                        return i;
+                    }
+                    else if(score == 1)
+                    {
+                        position = i;
+                    }
+
+                    eval = Minimax(tempBoard, depth - 1, true);
+                    tempBoard[i].text = "";
+                }
+            }
+        }
+
+        return position;
+    }
+
+    int TurnMinimax()
+    {
+        moveCountMinimax++;
+
+        if (buttonList[0].text == playerSide && buttonList[1].text == playerSide && buttonList[2].text == playerSide ||
+            buttonList[3].text == playerSide && buttonList[4].text == playerSide && buttonList[5].text == playerSide ||
+            buttonList[6].text == playerSide && buttonList[7].text == playerSide && buttonList[8].text == playerSide)
+        {
+            return -1;
+        }
+        else if (buttonList[0].text == playerSide && buttonList[3].text == playerSide && buttonList[6].text == playerSide ||
+            buttonList[1].text == playerSide && buttonList[4].text == playerSide && buttonList[7].text == playerSide ||
+            buttonList[2].text == playerSide && buttonList[5].text == playerSide && buttonList[8].text == playerSide)
+        {
+            return -1;
+        }
+        else if (buttonList[0].text == playerSide && buttonList[4].text == playerSide && buttonList[8].text == playerSide ||
+            buttonList[2].text == playerSide && buttonList[4].text == playerSide && buttonList[6].text == playerSide)
+        {
+            return -1;
+        }
+        else if (buttonList[0].text == computerSide && buttonList[1].text == computerSide && buttonList[2].text == computerSide ||
+            buttonList[3].text == computerSide && buttonList[4].text == computerSide && buttonList[5].text == computerSide ||
+            buttonList[6].text == computerSide && buttonList[7].text == computerSide && buttonList[8].text == computerSide)
+        {
+            return 2;
+        }
+        else if (buttonList[0].text == computerSide && buttonList[3].text == computerSide && buttonList[6].text == computerSide ||
+            buttonList[1].text == computerSide && buttonList[4].text == computerSide && buttonList[7].text == computerSide ||
+            buttonList[2].text == computerSide && buttonList[5].text == computerSide && buttonList[8].text == computerSide)
+        {
+            return 2;
+        }
+        else if (buttonList[0].text == computerSide && buttonList[4].text == computerSide && buttonList[8].text == computerSide ||
+            buttonList[2].text == computerSide && buttonList[4].text == computerSide && buttonList[6].text == computerSide)
+        {
+            return 2;
+        }
+        else if (moveCountMinimax >= 9)
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
     }
 }
