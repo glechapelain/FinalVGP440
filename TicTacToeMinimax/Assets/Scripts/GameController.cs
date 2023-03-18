@@ -21,13 +21,13 @@ public class PlayerColor
 public class GameController : MonoBehaviour
 {
     [SerializeField] Text[] buttonList;
+    string[] copiedBoard;
     string playerSide;
     string computerSide;
     public bool playerMove;
-    int eval;
-    int value;
     int score;
     int position;
+    int bestPosition;
 
     [SerializeField] GameObject gameOverPanel;
     [SerializeField] Text gameOverText;
@@ -40,7 +40,7 @@ public class GameController : MonoBehaviour
     [SerializeField] PlayerColor inactivePlayerColor;
 
     int moveCount;
-    int moveCountMinimax;
+    int minimaxMoveCount;
 
     void Awake()
     {
@@ -55,13 +55,12 @@ public class GameController : MonoBehaviour
     {
         if (playerMove == false)
         {
-            moveCountMinimax = moveCount;
-            value = Minimax(buttonList, buttonList.Length - moveCount, true);
+            bestPosition = BestPosition(true);
 
-            if (buttonList[value].GetComponentInParent<Button>().interactable == true)
+            if (buttonList[bestPosition].GetComponentInParent<Button>().interactable == true)
             {
-                buttonList[value].text = GetComputerSide();
-                buttonList[value].GetComponentInParent<Button>().interactable = false;
+                buttonList[bestPosition].text = GetComputerSide();
+                buttonList[bestPosition].GetComponentInParent<Button>().interactable = false;
                 EndTurn();
             }
         }
@@ -238,85 +237,105 @@ public class GameController : MonoBehaviour
         playerO.text.color = inactivePlayerColor.textColor;
     }
 
-    int Minimax(Text[] list, int depth, bool maximizingPlayer)
+    int BestPosition(bool useMinimax)
     {
-        Text[] tempBoard = new Text[9];
-
-        for (int i = 0; i < tempBoard.Length; ++i)
+        if(!useMinimax)
         {
-            tempBoard[i].GetComponentInParent<GridSpace>().SetGameControllerReference(this);
-        }
-
-        for (int i = 0; i < buttonList.Length; ++i)
-        {
-            tempBoard[i].text = list[i].text;
-        }
-
-        if (depth == 0)
-        {
-            return Random.Range(0, 8);
-        }
-        else if(maximizingPlayer)
-        {
-            for (int i = 0; i < tempBoard.Length; ++i)
-            {
-                if(tempBoard[i].text == "X" || tempBoard[i].text == "O")
-                {
-                    continue;
-                }
-                else
-                {
-                    tempBoard[i].text = computerSide;
-                    score = TurnMinimax();
-
-                    if (score == 2)
-                    {
-                        return i;
-                    }
-                    else if (score == 1)
-                    {
-                        position = i;
-                    }
-
-                    eval = Minimax(tempBoard, depth - 1, false);
-                    tempBoard[i].text = "";
-                }
-            }
+            position = Random.Range(0, 8);
         }
         else
         {
-            for (int i = 0; i < tempBoard.Length; ++i)
+            CopyBoardstate();
+            int bestScore = int.MinValue;
+            for (int i = 0; i < buttonList.Length; ++i)
             {
-                if (tempBoard[i].text == "X" || tempBoard[i].text == "O")
+                if (buttonList[i].text == "X" || buttonList[i].text == "O")
                 {
                     continue;
                 }
                 else
                 {
-                    tempBoard[i].text = computerSide;
-                    score = TurnMinimax();
-
-                    if (score == 2)
+                    copiedBoard[i] = computerSide;
+                    score = Minimax(0, false);
+                    copiedBoard[i] = "";
+                    
+                    if (score > bestScore)
                     {
-                        return i;
-                    }
-                    else if(score == 1)
-                    {
+                        bestScore = score;
                         position = i;
                     }
-
-                    eval = Minimax(tempBoard, depth - 1, true);
-                    tempBoard[i].text = "";
                 }
             }
         }
 
+        Debug.Log("Position found! " + position);
         return position;
     }
-
-    int TurnMinimax()
+    int Minimax(int depth, bool maximizingPlayer)
     {
-        moveCountMinimax++;
+        int checkedResult = CheckGameResult();
+
+        if(checkedResult != 0)
+        {
+            minimaxMoveCount = moveCount;
+            return checkedResult;
+        }
+        else if (maximizingPlayer)
+        {
+            int bestScore = int.MinValue;
+            for (int i = 0; i < copiedBoard.Length; ++i)
+            {
+                if (copiedBoard[i] == "X" || copiedBoard[i] == "O")
+                {
+                    continue;
+                }
+                else
+                {
+                    copiedBoard[i] = computerSide;
+                    score = Minimax(depth + 1, false);
+                    copiedBoard[i] = "";
+
+                    bestScore = Mathf.Max(score, bestScore);
+                }
+            }
+            return bestScore;
+        }
+        else
+        {
+            int bestScore = int.MaxValue;
+            for (int i = 0; i < copiedBoard.Length; ++i)
+            {
+                if (copiedBoard[i] == "X" || copiedBoard[i] == "O")
+                {
+                    continue;
+                }
+                else
+                {
+                    copiedBoard[i] = playerSide;
+                    score = Minimax(depth + 1, true);
+                    copiedBoard[i] = "";
+
+                    bestScore = Mathf.Min(score, bestScore);
+                }
+            }
+            return bestScore;
+        }
+    }
+
+    void CopyBoardstate()
+    {
+        copiedBoard = new string[9];
+        for (int i = 0; i < buttonList.Length; ++i)
+        {
+            copiedBoard[i] = buttonList[i].text;
+        }
+
+        minimaxMoveCount = moveCount;
+    }
+
+    int CheckGameResult()
+    {
+        minimaxMoveCount++;
 
         if (buttonList[0].text == playerSide && buttonList[1].text == playerSide && buttonList[2].text == playerSide ||
             buttonList[3].text == playerSide && buttonList[4].text == playerSide && buttonList[5].text == playerSide ||
@@ -352,7 +371,7 @@ public class GameController : MonoBehaviour
         {
             return 2;
         }
-        else if (moveCountMinimax >= 9)
+        else if (minimaxMoveCount >= 9)
         {
             return 1;
         }
