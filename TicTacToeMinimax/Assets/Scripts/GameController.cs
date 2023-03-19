@@ -53,7 +53,7 @@ public class GameController : MonoBehaviour
 
     void Update()
     {
-        if (playerMove == false)
+        while (playerMove == false)
         {
             bestPosition = BestPosition(true);
 
@@ -79,11 +79,13 @@ public class GameController : MonoBehaviour
         playerSide = startingSide;
         if(playerSide == "X")
         {
+            playerMove = true;
             computerSide = "O";
             SetPlayerColors(playerX, playerO);
         }
         else
         {
+            playerMove = false;
             computerSide = "X";
             SetPlayerColors(playerO, playerX);
         }
@@ -166,6 +168,7 @@ public class GameController : MonoBehaviour
     void GameOver(string winPlayer)
     {
         SetBoardInteractable(false);
+        playerMove = true;
 
         if (winPlayer == "draw")
         {
@@ -260,28 +263,32 @@ public class GameController : MonoBehaviour
 
             if (score > bestScore)
             {
-                //Debug.Log("Position found! " + position);
                 bestScore = score;
                 position = i;
             }
+
+            if(score == bestScore)
+            {
+                Debug.Log($"{i} - {score}");
+            }
         }
 
-        //Debug.Log("Position found! " + position);
         return position;
     }
 
     int Minimax(int depth, bool maximizingPlayer)
     {
         int checkedResult = CheckGameResult();
+        int bestScore = 0;
 
-        if(checkedResult != 0)
+        if (checkedResult != 0)
         {
             minimaxMoveCount = moveCount;
             return checkedResult;
         }
         else if (maximizingPlayer)
         {
-            int bestScore = int.MinValue;
+            bestScore = int.MinValue;
             for (int i = 0; i < copiedBoard.Length; ++i)
             {
                 if (copiedBoard[i] == "X" || copiedBoard[i] == "O")
@@ -290,17 +297,16 @@ public class GameController : MonoBehaviour
                 }
 
                 copiedBoard[i] = computerSide;
-                score = Minimax(depth + 1, false);
+                score = Minimax(depth + 1, !maximizingPlayer);
                 minimaxMoveCount--;
                 copiedBoard[i] = "";
 
                 bestScore = Mathf.Max(score, bestScore);
             }
-            return bestScore;
         }
         else
         {
-            int bestScore = int.MaxValue;
+            bestScore = int.MaxValue;
             for (int i = 0; i < copiedBoard.Length; ++i)
             {
                 if (copiedBoard[i] == "X" || copiedBoard[i] == "O")
@@ -309,14 +315,15 @@ public class GameController : MonoBehaviour
                 }
 
                 copiedBoard[i] = playerSide;
-                score = Minimax(depth + 1, true);
+                score = Minimax(depth + 1, !maximizingPlayer);
                 minimaxMoveCount--;
                 copiedBoard[i] = "";
 
                 bestScore = Mathf.Min(score, bestScore);
             }
-            return bestScore;
         }
+
+        return bestScore;
     }
 
     void CopyBoardstate()
