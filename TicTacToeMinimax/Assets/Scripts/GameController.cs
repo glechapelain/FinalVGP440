@@ -28,6 +28,7 @@ public class GameController : MonoBehaviour
     int score;
     int position;
     int bestPosition;
+    int recursiveCalls;
 
     [SerializeField] GameObject gameOverPanel;
     [SerializeField] Text gameOverText;
@@ -61,6 +62,7 @@ public class GameController : MonoBehaviour
             {
                 buttonList[bestPosition].text = GetComputerSide();
                 buttonList[bestPosition].GetComponentInParent<Button>().interactable = false;
+                Debug.Log(recursiveCalls);
                 EndTurn();
             }
         }
@@ -185,7 +187,7 @@ public class GameController : MonoBehaviour
 
     void ChangeSides()
     {
-        playerMove = (playerMove == true) ? false : true;
+        playerMove = !playerMove;
 
         if(playerMove == true)
         {
@@ -252,6 +254,7 @@ public class GameController : MonoBehaviour
         int bestScore = int.MinValue;
         for (int i = 0; i < buttonList.Length; ++i)
         {
+            recursiveCalls++;
             if (buttonList[i].text == "X" || buttonList[i].text == "O")
             {
                 continue;
@@ -278,6 +281,7 @@ public class GameController : MonoBehaviour
 
     int Minimax(int depth, bool maximizingPlayer)
     {
+        recursiveCalls++;
         int checkedResult = CheckGameResult();
         int bestScore = 0;
 
