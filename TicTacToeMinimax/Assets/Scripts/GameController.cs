@@ -242,29 +242,26 @@ public class GameController : MonoBehaviour
         if(!useMinimax)
         {
             position = Random.Range(0, 8);
+            return position;
         }
-        else
+
+        CopyBoardstate();
+        int bestScore = int.MinValue;
+        for (int i = 0; i < buttonList.Length; ++i)
         {
-            CopyBoardstate();
-            int bestScore = int.MinValue;
-            for (int i = 0; i < buttonList.Length; ++i)
+            if (buttonList[i].text == "X" || buttonList[i].text == "O")
             {
-                if (buttonList[i].text == "X" || buttonList[i].text == "O")
-                {
-                    continue;
-                }
-                else
-                {
-                    copiedBoard[i] = computerSide;
-                    score = Minimax(0, false);
-                    copiedBoard[i] = "";
-                    
-                    if (score > bestScore)
-                    {
-                        bestScore = score;
-                        position = i;
-                    }
-                }
+                continue;
+            }
+
+            copiedBoard[i] = computerSide;
+            score = Minimax(0, false);
+            copiedBoard[i] = "";
+
+            if (score > bestScore)
+            {
+                bestScore = score;
+                position = i;
             }
         }
 
@@ -289,14 +286,12 @@ public class GameController : MonoBehaviour
                 {
                     continue;
                 }
-                else
-                {
-                    copiedBoard[i] = computerSide;
-                    score = Minimax(depth + 1, false);
-                    copiedBoard[i] = "";
 
-                    bestScore = Mathf.Max(score, bestScore);
-                }
+                copiedBoard[i] = computerSide;
+                score = Minimax(depth + 1, false);
+                copiedBoard[i] = "";
+
+                bestScore = Mathf.Max(score, bestScore);
             }
             return bestScore;
         }
@@ -309,14 +304,12 @@ public class GameController : MonoBehaviour
                 {
                     continue;
                 }
-                else
-                {
-                    copiedBoard[i] = playerSide;
-                    score = Minimax(depth + 1, true);
-                    copiedBoard[i] = "";
 
-                    bestScore = Mathf.Min(score, bestScore);
-                }
+                copiedBoard[i] = playerSide;
+                score = Minimax(depth + 1, true);
+                copiedBoard[i] = "";
+
+                bestScore = Mathf.Min(score, bestScore);
             }
             return bestScore;
         }
