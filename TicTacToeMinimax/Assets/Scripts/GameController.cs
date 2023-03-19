@@ -260,14 +260,16 @@ public class GameController : MonoBehaviour
 
             if (score > bestScore)
             {
+                //Debug.Log("Position found! " + position);
                 bestScore = score;
                 position = i;
             }
         }
 
-        Debug.Log("Position found! " + position);
+        //Debug.Log("Position found! " + position);
         return position;
     }
+
     int Minimax(int depth, bool maximizingPlayer)
     {
         int checkedResult = CheckGameResult();
@@ -289,6 +291,7 @@ public class GameController : MonoBehaviour
 
                 copiedBoard[i] = computerSide;
                 score = Minimax(depth + 1, false);
+                minimaxMoveCount--;
                 copiedBoard[i] = "";
 
                 bestScore = Mathf.Max(score, bestScore);
@@ -307,6 +310,7 @@ public class GameController : MonoBehaviour
 
                 copiedBoard[i] = playerSide;
                 score = Minimax(depth + 1, true);
+                minimaxMoveCount--;
                 copiedBoard[i] = "";
 
                 bestScore = Mathf.Min(score, bestScore);
@@ -330,37 +334,37 @@ public class GameController : MonoBehaviour
     {
         minimaxMoveCount++;
 
-        if (buttonList[0].text == playerSide && buttonList[1].text == playerSide && buttonList[2].text == playerSide ||
-            buttonList[3].text == playerSide && buttonList[4].text == playerSide && buttonList[5].text == playerSide ||
-            buttonList[6].text == playerSide && buttonList[7].text == playerSide && buttonList[8].text == playerSide)
+        if (copiedBoard[0] == playerSide && copiedBoard[1] == playerSide && copiedBoard[2] == playerSide ||
+            copiedBoard[3] == playerSide && copiedBoard[4] == playerSide && copiedBoard[5] == playerSide ||
+            copiedBoard[6] == playerSide && copiedBoard[7] == playerSide && copiedBoard[8] == playerSide)
         {
             return -1;
         }
-        else if (buttonList[0].text == playerSide && buttonList[3].text == playerSide && buttonList[6].text == playerSide ||
-            buttonList[1].text == playerSide && buttonList[4].text == playerSide && buttonList[7].text == playerSide ||
-            buttonList[2].text == playerSide && buttonList[5].text == playerSide && buttonList[8].text == playerSide)
+        else if (copiedBoard[0] == playerSide && copiedBoard[3] == playerSide && copiedBoard[6] == playerSide ||
+                 copiedBoard[1] == playerSide && copiedBoard[4] == playerSide && copiedBoard[7] == playerSide ||
+                 copiedBoard[2] == playerSide && copiedBoard[5] == playerSide && copiedBoard[8] == playerSide)
         {
             return -1;
         }
-        else if (buttonList[0].text == playerSide && buttonList[4].text == playerSide && buttonList[8].text == playerSide ||
-            buttonList[2].text == playerSide && buttonList[4].text == playerSide && buttonList[6].text == playerSide)
+        else if (copiedBoard[0] == playerSide && copiedBoard[4] == playerSide && copiedBoard[8] == playerSide ||
+                 copiedBoard[2] == playerSide && copiedBoard[4] == playerSide && copiedBoard[6] == playerSide)
         {
             return -1;
         }
-        else if (buttonList[0].text == computerSide && buttonList[1].text == computerSide && buttonList[2].text == computerSide ||
-            buttonList[3].text == computerSide && buttonList[4].text == computerSide && buttonList[5].text == computerSide ||
-            buttonList[6].text == computerSide && buttonList[7].text == computerSide && buttonList[8].text == computerSide)
+        else if (copiedBoard[0] == computerSide && copiedBoard[1] == computerSide && copiedBoard[2] == computerSide ||
+                 copiedBoard[3] == computerSide && copiedBoard[4] == computerSide && copiedBoard[5] == computerSide ||
+                 copiedBoard[6] == computerSide && copiedBoard[7] == computerSide && copiedBoard[8] == computerSide)
         {
             return 2;
         }
-        else if (buttonList[0].text == computerSide && buttonList[3].text == computerSide && buttonList[6].text == computerSide ||
-            buttonList[1].text == computerSide && buttonList[4].text == computerSide && buttonList[7].text == computerSide ||
-            buttonList[2].text == computerSide && buttonList[5].text == computerSide && buttonList[8].text == computerSide)
+        else if (copiedBoard[0] == computerSide && copiedBoard[3] == computerSide && copiedBoard[6] == computerSide ||
+                 copiedBoard[1] == computerSide && copiedBoard[4] == computerSide && copiedBoard[7] == computerSide ||
+                 copiedBoard[2] == computerSide && copiedBoard[5] == computerSide && copiedBoard[8] == computerSide)
         {
             return 2;
         }
-        else if (buttonList[0].text == computerSide && buttonList[4].text == computerSide && buttonList[8].text == computerSide ||
-            buttonList[2].text == computerSide && buttonList[4].text == computerSide && buttonList[6].text == computerSide)
+        else if (copiedBoard[0] == computerSide && copiedBoard[4] == computerSide && copiedBoard[8] == computerSide ||
+                 copiedBoard[2] == computerSide && copiedBoard[4] == computerSide && copiedBoard[6] == computerSide)
         {
             return 2;
         }
@@ -368,9 +372,7 @@ public class GameController : MonoBehaviour
         {
             return 1;
         }
-        else
-        {
-            return 0;
-        }
+
+        return 0;
     }
 }
